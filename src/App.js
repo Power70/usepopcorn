@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const tempMovieData = [
   {
@@ -50,11 +50,50 @@ const tempWatchedData = [
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
+const KEY = '7fb5dc3fae7b8f2049b6d5e75d6e23bf';
+
 
   export default function App() {
   
-    const [movies, setMovies] = useState(tempMovieData);
-    const [watched, setWatched] = useState(tempWatchedData);
+    const [movies, setMovies] = useState([]);
+    const [watched, setWatched] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+   useEffect(function () {
+    async function fetchMovies() {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `https://api.themoviedb.org/3/search/movie?api_key=${KEY}&query=avengers`
+        );
+
+        if (!res.ok) throw new Error("Something went wrong with fetching movies");
+
+        const data = await res.json();
+
+        if (data.results) {
+          console.log(data.results);
+          
+          const formattedMovies = data.results.map(movie => ({
+             Title: movie.title,
+             Year: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
+             Poster: movie.poster_path 
+               ? `https://image.tmdb.org/t/p/w200${movie.poster_path}`
+               : null,
+             imdbID: movie.id.toString()
+          }));
+
+          setMovies(formattedMovies);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error(err.message);
+      }
+    }
+
+    fetchMovies();
+  }, []); // Empty dependency array means this runs once on mount
+
 
       return (
         <>
@@ -74,7 +113,7 @@ const average = (arr) =>
             } /> */}
 
           <Box>
-          <MovieList movies={movies} />
+          {isLoading ? <Loader /> : <MovieList movies={movies} />}
           </Box>
 
           <Box>
@@ -84,6 +123,12 @@ const average = (arr) =>
 
           </Main>
         </>
+      );
+    }
+
+    function Loader() {
+      return(
+        <div className="loader">Loading...</div>
       );
     }
 
