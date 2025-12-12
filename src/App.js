@@ -58,13 +58,16 @@ const KEY = '7fb5dc3fae7b8f2049b6d5e75d6e23bf';
     const [movies, setMovies] = useState([]);
     const [watched, setWatched] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [query, setQuery] = useState("");
+
+    const tempQuery = 'avengers'
 
    useEffect(function () {
     async function fetchMovies() {
       try {
         setIsLoading(true);
         const res = await fetch(
-          `https://api.themoviedb.org/3/search/movie?api_key=${KEY}&query=avengers`
+          `https://api.themoviedb.org/3/search/movie?api_key=${KEY}&query=${query}`
         );
 
         if (!res.ok) throw new Error("Something went wrong with fetching movies");
@@ -91,15 +94,20 @@ const KEY = '7fb5dc3fae7b8f2049b6d5e75d6e23bf';
       }
     }
 
+    if (query.length < 3) {
+      setMovies([]);
+      return;
+    }
+
     fetchMovies();
-  }, []); // Empty dependency array means this runs once on mount
+  }, [query]); // Run this effect whenever the query changes
 
 
       return (
         <>
           <NavBar>
           <Logo />
-          <MovieSearch />
+          <MovieSearch query={query} setQuery={setQuery}/>
           <NumResults movies={movies} />
           </NavBar>
 
@@ -150,8 +158,7 @@ const KEY = '7fb5dc3fae7b8f2049b6d5e75d6e23bf';
     );
   }
 
-  function MovieSearch(){
-    const [query, setQuery] = useState("");
+  function MovieSearch({ query, setQuery}){
     return(
       <input
           className="search"
