@@ -59,8 +59,15 @@ const KEY = '7fb5dc3fae7b8f2049b6d5e75d6e23bf';
     const [watched, setWatched] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [query, setQuery] = useState("");
+    const [selectedId, setSelectedId] = useState(null)
 
-    const tempQuery = 'avengers'
+    function handleSelectedMovie (id) {
+      setSelectedId(id);
+    }
+
+    function closeSelectedMovie () {
+      setSelectedId(null);
+    }
 
    useEffect(function () {
     async function fetchMovies() {
@@ -121,12 +128,22 @@ const KEY = '7fb5dc3fae7b8f2049b6d5e75d6e23bf';
             } /> */}
 
           <Box>
-          {isLoading ? <Loader /> : <MovieList movies={movies} />}
+          {isLoading ? <Loader /> : <MovieList movies={movies} onClick={handleSelectedMovie} />}
           </Box>
 
           <Box>
-          <WatchedSummary  watched={watched}/>
-          <WatchedMovieList watched={watched} />
+            {
+              selectedId ? (
+                <SelectedMovie 
+                selectedId={selectedId} 
+                onClose={closeSelectedMovie} />
+              ) : (
+                <>
+                <WatchedSummary  watched={watched}/>
+                <WatchedMovieList watched={watched} />
+                </>
+              )
+            }
           </Box>
 
           </Main>
@@ -227,20 +244,20 @@ const KEY = '7fb5dc3fae7b8f2049b6d5e75d6e23bf';
   //     );
   //   }
 
-  function MovieList({movies}){
+  function MovieList({movies, onClick}){
 
     return(
-      <ul className="list">
-        {movies?.map((movie) => (<Movie movie={movie} key={movie.imdbID}/>
-          
+      <ul className="list list-movies">
+        {movies?.map((movie) => (<Movie movie={movie} key={movie.imdbID} onClick={onClick} />
+           
         ))}
       </ul>
     );
   }
 
-  function Movie({movie}){
+  function Movie({movie, onClick}){
     return(
-      <li>
+      <li onClick={() => onClick(movie.imdbID)}>
             <img src={movie.Poster} alt={`${movie.Title} poster`} />
             <h3>{movie.Title}</h3>
             <div>
@@ -253,7 +270,13 @@ const KEY = '7fb5dc3fae7b8f2049b6d5e75d6e23bf';
     );
   }
 
-  
+  function SelectedMovie({selectedId, onClose}) {
+    return(
+      <div className="details">
+        <button className="btn-back" onClick={onClose}> &larr; Back</button>
+        Selected Movie ID: {selectedId}</div>
+    );
+  }
 
   function WatchedSummary({watched}){
 
